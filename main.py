@@ -7,14 +7,14 @@ Article: "Exact weighted vertex coloring via branch-and-price", Fabio Furini, En
 
 Problem: Weighted Vertex Coloring Problem
     + Description:
-        A positive weight is associated to each vertex of a graph.
+        A positive weight is associated to each vertex of a graphs.
         A color is associated to each vertex in such a way that:
             -> colors on adjacent vertices are different;
             -> the objective is to to minimize the sum of costs of the colors used
             -> the cost of a color is the maximum weight of the vertices assigned to that color
 
     + Notation:
-        -> G = (V, E) (the graph from the problem) ;
+        -> G = (V, E) (the graphs from the problem) ;
         -> m = |V| ;
         -> n = |E| ;
         -> w_i = the weight of node i ;
@@ -27,21 +27,21 @@ Problem: Weighted Vertex Coloring Problem
 
     + Definitions:
         -> Independent set = a subset of V in which no two adjacent vertices belong to it.
-                            (A coloring for the graph is a partition of vertex set into independent sets)
+                            (A coloring for the graphs is a partition of vertex set into independent sets)
         -> Color classes = the independent sets of a coloring.
 
 '''
-from src.graph.graph import Graph
+from src.graphs.graph import Graph
 from src.initializers.independent_sets_initializer import IndependentSetsInitializer
-from src.linear_program.gurobi_solver import GurobiSolver
-from src.linear_program.wvcp_linear_program import WVCPLinearProgram
+from src.linear_programs.lp_solvers.gurobi_solver import GurobiSolver
+from src.linear_programs.wvcp_linear_program import WVCPLinearProgram
 
 if __name__ == '__main__':
 
     graph = Graph().from_file("./instances/R50_1g.col")
 
-    # print(graph.edges)
-    # print(graph.nodes_weights)
+    # print(graphs.edges)
+    # print(graphs.nodes_weights)
 
     indep_sets = IndependentSetsInitializer(graph).simple_assignation()
 
@@ -59,3 +59,5 @@ if __name__ == '__main__':
         print(solver.get_sol())
         print(solver.get_obj())
         print(solver.get_pi())
+
+    pi_vals = solver.get_pi()

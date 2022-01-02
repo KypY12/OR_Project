@@ -23,7 +23,7 @@ class IndependentSetsInitializer:
                         is_feasible = True
 
                         for current in current_indep_set:
-                            if other in self.graph.edges[current]:
+                            if other in self.graph.neighbourhoods[current]:
                                 is_feasible = False
                                 break
 

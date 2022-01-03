@@ -31,6 +31,7 @@ Problem: Weighted Vertex Coloring Problem
         -> Color classes = the independent sets of a coloring.
 
 '''
+from src.branch_and_price.branch_and_price import BranchAndPrice
 from src.graphs.graph import Graph
 from src.initializers.independent_sets_initializer import IndependentSetsInitializer
 from src.linear_programs.lp_solvers.gurobi_solver import GurobiSolver
@@ -40,24 +41,28 @@ if __name__ == '__main__':
 
     graph = Graph().from_file("./instances/R50_1g.col")
 
+    BranchAndPrice(graph=graph,
+                   epsilon=1e-8).execute()
+
+
     # print(graphs.edges)
     # print(graphs.nodes_weights)
-
-    indep_sets = IndependentSetsInitializer(graph).simple_assignation()
-
-    print(indep_sets)
-
-    lp = WVCPLinearProgram(graph, indep_sets)
-
-    print(lp.c)
-    print(lp.A)
-    print(lp.b)
-
-    solver = GurobiSolver(lp.A, lp.b, lp.c)
-
-    if not solver.is_unbounded_or_unfeasible():
-        print(solver.get_sol())
-        print(solver.get_obj())
-        print(solver.get_pi())
-
-    pi_vals = solver.get_pi()
+    #
+    # indep_sets = IndependentSetsInitializer(graph).simple_assignation()
+    #
+    # print(indep_sets)
+    #
+    # lp = WVCPLinearProgram(graph, indep_sets)
+    #
+    # print(lp.c)
+    # print(lp.A)
+    # print(lp.b)
+    #
+    # solver = GurobiSolver(lp.A, lp.b, lp.c, 0, 1)
+    #
+    # if not solver.is_unbounded_or_unfeasible():
+    #     print(solver.get_sol())
+    #     print(solver.get_obj())
+    #     print(solver.get_pi())
+    #
+    # pi_vals = solver.get_pi()

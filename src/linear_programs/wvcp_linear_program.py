@@ -52,5 +52,7 @@ class WVCPLinearProgram:
         self.A = np.concatenate([self.A, new_columns], axis=1)
 
     def add_columns(self, indep_sets):
+
+        self.indep_sets += indep_sets
         self.__add_columns_to_A__(indep_sets)
         self.__add_columns_to_c__(indep_sets)

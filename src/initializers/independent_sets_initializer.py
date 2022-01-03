@@ -8,7 +8,6 @@ class IndependentSetsInitializer:
         indep_sets = []
 
         visited = [0 for _ in range(self.graph.number_of_nodes)]
-        print(visited)
 
         for node in range(self.graph.number_of_nodes):
 

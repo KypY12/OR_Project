@@ -1,3 +1,6 @@
+from copy import deepcopy
+
+
 class Graph:
 
     def __init__(self):
@@ -8,6 +11,8 @@ class Graph:
         self.nodes_weights = []
 
         self.max_weight_subgraphs = dict()
+
+        self.original_nodes = []
 
     def from_file(self, file_path, sep=' '):
 
@@ -24,6 +29,8 @@ class Graph:
                 line = file.readline()
 
         self.number_of_nodes = len(nodes_str)
+
+        self.original_nodes = [[x] for x in range(self.number_of_nodes)]
 
         self.neighbourhoods = [list() for _ in range(self.number_of_nodes)]
         self.nodes_weights = [0 for _ in range(self.number_of_nodes)]
@@ -45,8 +52,13 @@ class Graph:
 
         return self
 
-    def from_params(self, edges, nodes_weights):
-        self.neighbourhoods, self.nodes_weights = edges, nodes_weights
+    def copy(self, graph):
+        self.number_of_nodes = graph.number_of_nodes
+
+        self.neighbourhoods = deepcopy(graph.neighbourhoods)
+        self.nodes_weights = deepcopy(graph.nodes_weights)
+
+        self.max_weight_subgraphs = deepcopy(graph.max_weight_subgraphs)
 
     def get_neighbours(self, node):
         return self.neighbourhoods[node]

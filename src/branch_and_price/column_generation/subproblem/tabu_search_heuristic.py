@@ -4,11 +4,12 @@ import copy
 
 class TabuSearchHeuristic:
 
-    def __init__(self, pi_vals, weight, graph, subgraph, max_iterations=100, beta=1.1):
+    def __init__(self, pi_vals, weight, subgraph, max_iterations=100, beta=1.1):
         self.pi_vals = pi_vals
         self.weight = weight
-        self.graph = graph
         self.subgraph = subgraph
+        self.nodes = subgraph["nodes"]
+        self.neighbourhoods = subgraph["neighbourhoods"]
         self.max_iteations = max_iterations
         self.beta = beta
 
@@ -20,7 +21,7 @@ class TabuSearchHeuristic:
         self.found_indep_set = []
 
     def __generate_random_maximal_indep_set__(self):
-        nodes = copy.deepcopy(self.subgraph["nodes"])
+        nodes = copy.deepcopy(self.nodes)
 
         random.shuffle(nodes)
 
@@ -30,7 +31,7 @@ class TabuSearchHeuristic:
 
             is_feasible = True
             for other in indep_set:
-                if node in self.subgraph["neighbourhoods"][other]:
+                if node in self.neighbourhoods[other]:
                     is_feasible = False
                     break
 
@@ -48,15 +49,16 @@ class TabuSearchHeuristic:
         return len(set(neighbours).intersection(set(indep_set))) == num_connections
 
     def __get_nodes_connected_to_indep_set__(self, num_connections):
+        nodes_unused = [node for node in self.nodes if node not in self.current_indep_set]
+
         self.nodes_out_indep_set = []
+        for node in nodes_unused:
 
-        for node in range(self.graph.number_of_nodes):
-
-            if self.__check_number_connections_to_indep_set(self.graph.neighbourhoods[node], self.current_indep_set, num_connections):
+            if self.__check_number_connections_to_indep_set(self.neighbourhoods[node], self.current_indep_set, num_connections):
                 self.nodes_out_indep_set.append(node)
 
     def __get_node_connected_from_indep_set__(self, node_out, num_connections):
-        nodes_in_indep_set = list(set(self.graph.neighbourhoods[node_out]).intersection(set(self.current_indep_set)))
+        nodes_in_indep_set = list(set(self.neighbourhoods[node_out]).intersection(set(self.current_indep_set)))
 
         if num_connections == 1:
             return nodes_in_indep_set[0]
@@ -72,14 +74,14 @@ class TabuSearchHeuristic:
                 del self.tabu_list[node]
 
     def __expand_random_maximal_indep_set__(self):
-        nodes_unused = [val for val in range(self.graph.number_of_nodes) if val not in self.current_indep_set]
+        nodes_unused = [node for node in self.nodes if node not in self.current_indep_set]
         random.shuffle(nodes_unused)
 
         for node in nodes_unused:
             is_feasible = True
 
             for other_node in self.current_indep_set:
-                if node in self.graph.neighbourhoods[other_node]:
+                if node in self.neighbourhoods[other_node]:
                     is_feasible = False
                     break
 
@@ -148,7 +150,6 @@ class TabuSearchHeuristic:
                     self.__get_nodes_connected_to_indep_set__(num_connections=1)
                 elif exec_response == "unchanged":
                     break
-
 
             # 2-1 exchange
             if self.max == -1:

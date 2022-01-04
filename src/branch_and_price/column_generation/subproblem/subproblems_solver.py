@@ -14,9 +14,8 @@ class SubproblemsSolver:
     def check_independency_subgraph(self, indep_set):
         for node in indep_set:
             for other_node in indep_set:
-                if node != other_node:
-                    if node in self.graph.neighbourhoods[other_node]:
-                        return False
+                if node != other_node and node in self.graph.neighbourhoods[other_node]:
+                    return False
 
         return True
 
@@ -32,12 +31,9 @@ class SubproblemsSolver:
 
             found_indep_set = TabuSearchHeuristic(weight=mw_subgraph,
                                                  pi_vals=self.pi_vals,
-                                                 graph=self.graph,
                                                  subgraph=self.max_weight_subgraphs.get(mw_subgraph)).execute()
             print(found_indep_set)
             print(self.check_independency_subgraph(found_indep_set))
-
-            #break
 
             # TO DO: implement alg described in the paper for solving the subproblem (first try TabuSearch then BnB)
             # ...

@@ -51,6 +51,7 @@ class BranchAndPrice:
                     indep_sets[sets_index][index] = low_node
                 elif node > high_node:
                     indep_sets[sets_index][index] -= 1
+        #             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
 
         # Remove high node from the graph
         graph.number_of_nodes -= 1

@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class BranchAndBound:
 
     def __init__(self, pi_vals, weight, subgraph):
@@ -8,7 +11,10 @@ class BranchAndBound:
         self.nodes = subgraph["nodes"]
         self.neighbourhoods = {self.nodes[index]: subgraph["neighbourhoods"][index] for index in range(len(self.nodes))}
 
-        self.pi_vals = {self.nodes[index]: pi_vals[index] for index in range(len(pi_vals))}
+        self.pi_vals = pi_vals
+
+        self.LB = -np.inf
+        self.LB_S = []
 
     def __sum_of_pis__(self, indep_set):
 
@@ -22,70 +28,127 @@ class BranchAndBound:
 
         return False
 
-    def __weighted_clique_cover_construction_heuristic__(self, LB, F):
+    def __get_maximal_clique_for_node__(self, node, nodes_set):
+
+        maximal_clique = [node]
+
+        for current_node in nodes_set:
+
+            is_feasible = True
+
+            for clique_node in maximal_clique:
+                if current_node not in self.neighbourhoods[clique_node]:
+                    is_feasible = False
+                    break
+
+            if is_feasible:
+                maximal_clique.append(current_node)
+
+        return maximal_clique
+
+    def __weighted_clique_cover_construction_heuristic__(self, S, F):
 
         wcc_nodes_lists = []
         wcc_weights = []
+        wcc_weights_sum = 0
 
-        weight_sorted_nodes = sorted(self.nodes, key=lambda t: self.pi_vals[t])
+        not_visited = list(F)
+        temp_pi_vals = list(self.pi_vals)
 
+        stop_condition_term = self.LB - self.__sum_of_pis__(S)
+        stop_condition = False
 
+        while len(not_visited) > 0:
 
+            v = min(not_visited, key=lambda t: temp_pi_vals[t])
+            not_visited.remove(v)
 
-        pass
+            v_maximal_clique = self.__get_maximal_clique_for_node__(v, not_visited)
+            v_maximal_clique_weight = temp_pi_vals[v]
 
-    def __second_pruning_rule_check__(self):
+            wcc_nodes_lists.append(v_maximal_clique)
+            wcc_weights.append(v_maximal_clique_weight)
 
-        weighted_clique_cover = self.__weighted_clique_cover_construction_heuristic__()
+            for node in v_maximal_clique:
+                temp_pi_vals[node] -= v_maximal_clique_weight
 
-        return weighted_clique_cover, False
+            wcc_weights_sum += v_maximal_clique_weight
+            if wcc_weights_sum > stop_condition_term:
+                stop_condition = True
+                break
 
-    def __first_branching_rule__(self):
+        if stop_condition:
+            # save branch info (non-zero-weight nodes)
+            return [node for node in F if temp_pi_vals[node] != 0], False
+        else:
+            # pruning
+            return [], True
 
-        pass
+    def __second_branching_rule__(self, S, F, X):
 
-    def __second_branching_rule__(self):
+        for x in X:
+            if self.pi_vals[x] >= self.__sum_of_pis__(set(S) & set(self.neighbourhoods[x])) and \
+                    self.__sum_of_pis__(F) > self.LB - self.__sum_of_pis__(S):
+                return list(set(self.neighbourhoods[x]) & set(F))
 
-        pass
+        return []
 
-    def __third_branching_rule__(self):
+    def __third_branching_rule__(self, F):
 
-        pass
+        for f in F:
+            if self.pi_vals[f] >= self.__sum_of_pis__(set(F) & set(self.neighbourhoods[f])):
+                return [f]
 
-    def __find_branch_vertices__(self):
+        return []
 
-        pass
+    def __find_branch_vertices__(self, non_zero_nodes, S, F, X):
+
+        branching_sets = [non_zero_nodes,
+                          self.__second_branching_rule__(S, F, X),
+                          self.__third_branching_rule__(F)]
+
+        branching_dict = {branching_set: len(branching_set) for branching_set in branching_sets
+                          if len(branching_set) > 0}
+
+        # Return the smallest branching set
+        return min(branching_dict, key=lambda t: branching_dict[t])
 
     def execute(self):
-
-        S = []
-        F = list(self.nodes)
-        X = []
 
         # S = current set
         # F = free vertices
         # X = excluded vertices
-        bnb_stack = [{"S": S,
-                      "F": F,
-                      "X": X}]
+        S, F, X = [], list(self.nodes), []
+        bnb_stack = [(S, F, X)]
 
-        best_so_far = []
+        self.LB = self.__sum_of_pis__(S)
+        self.LB_S = []
 
         while len(bnb_stack) > 0:
 
-            current_sets = bnb_stack.pop()
+            S, F, X = bnb_stack.pop()
 
-            # First pruning rules
-            if len(current_sets["F"]) > 0 and not self.__first_pruning_rule_check__():
+            current_LB = self.__sum_of_pis__(S)
+            if current_LB > self.LB:
+                self.LB = current_LB
+                self.LB_S = list(S)
 
-                weighted_clique_cover, is_rule_checked = self.__second_pruning_rule_check__()
+            # First pruning rule
+            if len(F) > 0 and not self.__first_pruning_rule_check__(S, F, X):
 
-                if not is_rule_checked:
-                    branch_vertices = self.__find_branch_vertices__()
-                    #
-                    #
-                    # BRANCHING LOOP
-                    #
-                    pass
+                # Second pruning rule
+                non_zero_nodes, apply_pruning = self.__weighted_clique_cover_construction_heuristic__(S, F)
 
-                pass
+                if not apply_pruning:
+                    F_p = self.__find_branch_vertices__(non_zero_nodes, S, F, X)
+                    p = len(F_p)
+
+                    for i, f_i in list(enumerate(F_p))[::-1]:
+                        new_X = list(X)
+                        new_F = list(set(F) - (set(self.neighbourhoods[f_i]) | set(F_p[i:p])))
+                        new_S = list(S + [f_i])
+
+                        bnb_stack.append((new_S, new_F, new_X))
+                        X += [f_i]
+
+        return self.LB_S

@@ -43,7 +43,7 @@ class WVCPLinearProgram:
     def __add_columns_to_c__(self, indep_sets):
 
         new_columns = np.array([self.__get_max_weight__(indep_set) for indep_set in indep_sets])
-        self.c = np.concatenate([self.c, new_columns], axis=1)
+        self.c = np.concatenate([self.c, new_columns], axis=0)
 
     def __add_columns_to_A__(self, indep_sets):
 

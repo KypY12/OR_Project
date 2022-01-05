@@ -32,18 +32,20 @@ Problem: Weighted Vertex Coloring Problem
 
 '''
 from src.branch_and_price.branch_and_price import BranchAndPrice
+from src.branch_and_price.column_generation.master_problem.restricted_master_problem import RestrictedMasterProblem
+from src.branch_and_price.column_generation.subproblem.branch_and_bound import BranchAndBound
+from src.branch_and_price.column_generation.subproblem.subproblems_solver import SubproblemsSolver
+from src.branch_and_price.column_generation.subproblem.tabu_search_heuristic import TabuSearchHeuristic
 from src.graphs.graph import Graph
 from src.initializers.independent_sets_initializer import IndependentSetsInitializer
 from src.linear_programs.lp_solvers.gurobi_solver import GurobiSolver
 from src.linear_programs.wvcp_linear_program import WVCPLinearProgram
 
 if __name__ == '__main__':
-
     graph = Graph().from_file("./instances/R50_1g.col")
 
     BranchAndPrice(graph=graph,
                    epsilon=1e-8).execute()
-
 
     # print(graphs.edges)
     # print(graphs.nodes_weights)
@@ -66,3 +68,25 @@ if __name__ == '__main__':
     #     print(solver.get_pi())
     #
     # pi_vals = solver.get_pi()
+    #
+    # rmp = RestrictedMasterProblem(graph, indep_sets)
+    #
+    # subgraphs = graph.subgraphs_by_max_weight()
+    #
+    # sol, obj, pi_vals = rmp.solve_relaxation()
+    #
+    # weights = sorted(list(set(graph.nodes_weights)))
+    #
+    # i = 4
+    # res_indep_set = BranchAndBound(pi_vals, subgraphs[weights[i]], weights[i]).execute()
+    #
+    # print("BNB : ", sorted(res_indep_set))
+    # print(SubproblemsSolver(graph).check_independency_subgraph(res_indep_set))
+    #
+    # found_indep_set = TabuSearchHeuristic(weight=weights[i],
+    #                                       pi_vals=pi_vals,
+    #                                       subgraph=subgraphs[weights[i]]).execute()
+    #
+    # print("TABU : ", sorted(found_indep_set))
+    # print(SubproblemsSolver(graph).check_independency_subgraph(found_indep_set))
+

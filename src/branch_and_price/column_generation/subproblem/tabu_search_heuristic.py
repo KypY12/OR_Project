@@ -173,7 +173,7 @@ class TabuSearchHeuristic:
             if self.__sum_of_pis__(self.found_indep_set) > self.beta * self.weight or self.max == -1:
                 return self.found_indep_set
 
-            # update number iterartions for nodes in tabu list
+            # update number iterations for nodes in tabu list
             self.__update_tabu_list__()
 
         return self.found_indep_set

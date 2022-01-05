@@ -135,6 +135,7 @@ class BranchAndPrice:
         is_bounded = True
         sol, obj = 0, 0
 
+        new_columns = []
         while len(new_column) > 0:
             sol, obj, pi_vals = rmp.solve_relaxation()
 
@@ -142,8 +143,14 @@ class BranchAndPrice:
                 is_bounded = False
                 break
 
+            print(pi_vals)
             sp_solver.set_pi_vals(pi_vals)
             new_column = sp_solver.solve()
+
+            if new_column in new_columns:
+                print("wrong")
+
+            new_columns += [new_column]
 
             rmp.add_column(new_column)
 
@@ -169,6 +176,10 @@ class BranchAndPrice:
 
             is_bounded, sol, obj = self.__solve_problem__(**problem)
 
+            print(sol)
+            print(obj)
+            print("================")
+
             if is_bounded and (best_so_far["rmp"] == -1 or obj > best_so_far["obj"]):
 
                 max_fractional = self.__get_max_fractional__(sol)
@@ -178,6 +189,7 @@ class BranchAndPrice:
                     best_so_far = {"sol": sol,
                                    "obj": obj,
                                    "rmp": problem["rmp"]}
+                    print(best_so_far)
 
                 else:
                     problems_stack += self.__branch__(max_fractional, problem["rmp"])

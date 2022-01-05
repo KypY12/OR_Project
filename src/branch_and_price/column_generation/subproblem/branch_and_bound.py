@@ -3,13 +3,14 @@ import numpy as np
 
 class BranchAndBound:
 
-    def __init__(self, pi_vals, weight, subgraph):
+    def __init__(self, pi_vals, subgraph, weight, beta=1.1):
 
         self.weight = weight
+        self.beta = beta
 
         self.nodes_indices = dict()
         self.nodes = subgraph["nodes"]
-        self.neighbourhoods = {self.nodes[index]: subgraph["neighbourhoods"][index] for index in range(len(self.nodes))}
+        self.neighbourhoods = subgraph["neighbourhoods"]
 
         self.pi_vals = pi_vals
 
@@ -107,11 +108,11 @@ class BranchAndBound:
                           self.__second_branching_rule__(S, F, X),
                           self.__third_branching_rule__(F)]
 
-        branching_dict = {branching_set: len(branching_set) for branching_set in branching_sets
-                          if len(branching_set) > 0}
+        branching_dict = {b_index: len(branching_sets[b_index]) for b_index in range(len(branching_sets))
+                          if len(branching_sets[b_index]) > 0}
 
         # Return the smallest branching set
-        return min(branching_dict, key=lambda t: branching_dict[t])
+        return branching_sets[min(branching_dict, key=lambda t: branching_dict[t])]
 
     def execute(self):
 
@@ -121,7 +122,7 @@ class BranchAndBound:
         S, F, X = [], list(self.nodes), []
         bnb_stack = [(S, F, X)]
 
-        self.LB = self.__sum_of_pis__(S)
+        self.LB = 0
         self.LB_S = []
 
         while len(bnb_stack) > 0:
@@ -129,9 +130,14 @@ class BranchAndBound:
             S, F, X = bnb_stack.pop()
 
             current_LB = self.__sum_of_pis__(S)
+
             if current_LB > self.LB:
                 self.LB = current_LB
                 self.LB_S = list(S)
+
+                # If we find an independent set with the weight higher than the target weight, then return
+                if self.LB > self.beta * self.weight:
+                    return self.LB_S
 
             # First pruning rule
             if len(F) > 0 and not self.__first_pruning_rule_check__(S, F, X):
@@ -140,6 +146,7 @@ class BranchAndBound:
                 non_zero_nodes, apply_pruning = self.__weighted_clique_cover_construction_heuristic__(S, F)
 
                 if not apply_pruning:
+
                     F_p = self.__find_branch_vertices__(non_zero_nodes, S, F, X)
                     p = len(F_p)
 

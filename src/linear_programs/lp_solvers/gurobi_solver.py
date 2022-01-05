@@ -1,13 +1,14 @@
 import gurobipy as gp
 from gurobipy import GRB
 
+env = gp.Env(empty=True)
+env.setParam("LogToConsole", 0)
+env.start()
+
 
 class GurobiSolver:
 
     def __init__(self, A, b, c, lb, ub):
-        self.env = gp.Env(empty=True)
-        self.env.setParam("LogToConsole", 0)
-        self.env.start()
 
         self.A, self.b, self.c = A, b, c
         self.lb, self.ub = lb, ub
@@ -16,7 +17,7 @@ class GurobiSolver:
 
     def __solve__(self):
         # Create the model
-        model = gp.Model("Gurobi Model", env=self.env)
+        model = gp.Model("Gurobi Model", env=env)
 
         # Create the variables
         x = model.addMVar(shape=self.c.shape, vtype=GRB.CONTINUOUS, name="x", lb=self.lb, ub=self.ub)

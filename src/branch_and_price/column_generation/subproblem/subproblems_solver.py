@@ -1,4 +1,6 @@
+from src.branch_and_price.column_generation.subproblem.branch_and_bound import BranchAndBound
 from src.branch_and_price.column_generation.subproblem.tabu_search_heuristic import TabuSearchHeuristic
+
 
 class SubproblemsSolver:
 
@@ -24,23 +26,21 @@ class SubproblemsSolver:
         if len(self.pi_vals) == 0:
             raise Exception("Subproblem pi values need to be set before solve() call!")
 
-        # This method returns multiple independent sets that correspond to the columns that were generated
-        indep_sets = []
+        found_indep_set = []
+
         for mw_subgraph in self.max_weight_subgraphs:
-
-
             found_indep_set = TabuSearchHeuristic(weight=mw_subgraph,
+                                                  pi_vals=self.pi_vals,
+                                                  subgraph=self.max_weight_subgraphs.get(mw_subgraph)).execute()
+            if len(found_indep_set) > 0:
+                break
+
+        if len(found_indep_set) == 0:
+            for mw_subgraph in self.max_weight_subgraphs:
+                found_indep_set = BranchAndBound(weight=mw_subgraph,
                                                  pi_vals=self.pi_vals,
                                                  subgraph=self.max_weight_subgraphs.get(mw_subgraph)).execute()
-            print(found_indep_set)
-            print(self.check_independency_subgraph(found_indep_set))
+                if len(found_indep_set) > 0:
+                    break
 
-            # TO DO: implement alg described in the paper for solving the subproblem (first try TabuSearch then BnB)
-            # ...
-            # ...
-            # ...
-            #pass
-
-        return indep_sets
-
-
+        return found_indep_set

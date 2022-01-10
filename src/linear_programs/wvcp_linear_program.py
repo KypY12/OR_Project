@@ -51,8 +51,14 @@ class WVCPLinearProgram:
                                 for node in range(self.graph.number_of_nodes)])
         self.A = np.concatenate([self.A, new_columns], axis=1)
 
-    def add_columns(self, indep_sets):
+    def add_columns(self, current_indep_sets):
 
-        self.indep_sets += indep_sets
-        self.__add_columns_to_A__(indep_sets)
-        self.__add_columns_to_c__(indep_sets)
+        indep_sets = [indep_set for indep_set in current_indep_sets if indep_set not in self.indep_sets]
+
+        if len(indep_sets) > 0:
+            self.indep_sets += indep_sets
+            self.__add_columns_to_A__(indep_sets)
+            self.__add_columns_to_c__(indep_sets)
+
+        else:
+            current_indep_sets.clear()

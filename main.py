@@ -43,27 +43,27 @@ def run_for_instance(instance_file_path):
     print(f"INDEP SETS WEIGHTS : {indep_sets_weights}")
     print(f"EXECUTION TIME : {elapsed_time} seconds")
 
-    with open(f"./results/{instance_file_path.split('/')[-1][:-4]}", "w") as file:
-        data_to_write = \
-            f"OBJECTIVE FUNCTION : {obj}\n" + \
-            f"SOLUTION : {solution}\n" + \
-            f"INDEP SETS : {original_sol_indep_sets}\n" + \
-            f"INDEP SETS WEIGHTS : {indep_sets_weights}\n" + \
-            f"EXECUTION TIME : {elapsed_time} seconds"
-        file.write(data_to_write)
+    # with open(f"./results/{instance_file_path.split('/')[-1][:-4]}", "w") as file:
+    #     data_to_write = \
+    #         f"OBJECTIVE FUNCTION : {obj}\n" + \
+    #         f"SOLUTION : {solution}\n" + \
+    #         f"INDEP SETS : {original_sol_indep_sets}\n" + \
+    #         f"INDEP SETS WEIGHTS : {indep_sets_weights}\n" + \
+    #         f"EXECUTION TIME : {elapsed_time} seconds"
+    #     file.write(data_to_write)
 
 
 instances_paths = [
     # "./instances/R50_1g.col",
     # "./instances/R50_1gb.col",
     # "./instances/R50_9g.col",
-    # "./instances/R50_9gb.col",
+    "./instances/R50_9gb.col",
 
     # "./instances/R50_5g.col",
     # "./instances/R50_5gb.col",
 
     # "./instances/R75_9g.col",
-    "./instances/R75_9gb.col",
+    # "./instances/R75_9gb.col",
     # "./instances/R75_1g.col",
     # "./instances/R75_1gb.col",
     # "./instances/R100_9g.col",

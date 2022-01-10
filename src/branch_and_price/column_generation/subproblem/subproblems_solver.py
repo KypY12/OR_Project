@@ -1,5 +1,3 @@
-import sys
-
 import numpy as np
 from gurobipy import GRB
 
@@ -28,6 +26,16 @@ class SubproblemsSolver:
         return True
 
     def __create_lp_problem__(self, nodes, neighbourhoods, pis, weight):
+
+        # for mw_subgraph in self.max_weight_subgraphs:
+        #     nodes = self.max_weight_subgraphs.get(mw_subgraph)["nodes"]
+        #     neighbourhoods = self.max_weight_subgraphs.get(mw_subgraph)["neighbourhoods"]
+        #     pis = {node: self.pi_vals[node] for node in nodes}
+        #
+        #     found_indep_set = self.__create_lp_problem__(nodes, neighbourhoods, pis, mw_subgraph)
+        #
+        #     if len(found_indep_set) > 0 and found_indep_set not in indep_sets:
+        #         indep_sets.append(found_indep_set)
 
         c = [pis[node] for node in nodes]
 
@@ -69,29 +77,12 @@ class SubproblemsSolver:
 
         indep_sets = []
 
-        # for mw_subgraph in self.max_weight_subgraphs:
-        #     nodes = self.max_weight_subgraphs.get(mw_subgraph)["nodes"]
-        #     neighbourhoods = self.max_weight_subgraphs.get(mw_subgraph)["neighbourhoods"]
-        #     pis = {node: self.pi_vals[node] for node in nodes}
-        #
-        #     found_indep_set = self.__create_lp_problem__(nodes, neighbourhoods, pis, mw_subgraph)
-        #
-        #     if len(found_indep_set) > 0 and found_indep_set not in indep_sets:
-        #         indep_sets.append(found_indep_set)
-
         for mw_subgraph in self.max_weight_subgraphs:
             found_indep_set = TabuSearchHeuristic(weight=mw_subgraph,
                                                   pi_vals=self.pi_vals,
                                                   subgraph=self.max_weight_subgraphs.get(mw_subgraph)).execute()
             if len(found_indep_set) > 0 and found_indep_set not in indep_sets:
                 indep_sets.append(found_indep_set)
-
-            # else:
-            #     found_indep_set = BranchAndBound(weight=mw_subgraph,
-            #                                      pi_vals=self.pi_vals,
-            #                                      subgraph=self.max_weight_subgraphs.get(mw_subgraph)).execute()
-            #     if len(found_indep_set) > 0 and found_indep_set not in indep_sets:
-            #         indep_sets.append(found_indep_set)
 
         if len(indep_sets) == 0:
             for mw_subgraph in self.max_weight_subgraphs:

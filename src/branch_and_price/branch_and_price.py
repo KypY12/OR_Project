@@ -1,4 +1,3 @@
-import sys
 import time
 from copy import deepcopy
 
@@ -168,73 +167,49 @@ class BranchAndPrice:
         i_weight_index = graph_weights_sorted.index(graph.nodes_weights[i])
 
         # Get independent set S2
+        S2 = []
 
-        S2_visited = []
-        j = -1
-
-        while j == -1:
-
-            S2 = []
-            #   Search by the first condition
-            for index, indep_set in enumerate(indep_sets):
-                if index != max_fractional and \
-                        i in indep_set and \
-                        indep_sets_max_weights[index] == graph.nodes_weights[i] and \
-                        indep_set not in S2_visited:
-                    # if indep_set contains i and its cost is equal to the weight of i
-                    S2 = indep_set
-                    break
-
-            if len(S2) == 0:
-
-                if i_weight_index > 0:
-                    #   Search by the second condition
-                    searched_weight = graph_weights_sorted[i_weight_index - 1]
-
-                    for w_index, m_weight in enumerate(indep_sets_max_weights):
-                        if m_weight == searched_weight and indep_sets[w_index] not in S2_visited:
-                            S2 = indep_sets[w_index]
-                            break
-
-                    if len(S2) == 0 and i_weight_index < len(graph_weights_sorted) - 1:
-                        #   Search by the third condition
-                        searched_weight = graph_weights_sorted[i_weight_index + 1]
-
-                        for w_index, m_weight in enumerate(indep_sets_max_weights):
-                            if m_weight == searched_weight and indep_sets[w_index] not in S2_visited:
-                                S2 = indep_sets[w_index]
-                                break
-
-                else:
-                    #   Search by the third condition
-                    searched_weight = graph_weights_sorted[i_weight_index + 1]
-
-                    # S2 = indep_sets[indep_sets_max_weights.index(weight)]
-                    for w_index, m_weight in enumerate(indep_sets_max_weights):
-                        if m_weight == searched_weight and indep_sets[w_index] not in S2_visited:
-                            S2 = indep_sets[w_index]
-                            break
-
-            if len(S2) > 0:
-                # Get node j
-                #   Get the elements that are either in S1 or in S2, but not in both (symmetric difference)
-                #   and remove node i
-                j_candidates = list((set(S1) ^ set(S2)) - {i})
-                #   Only nodes that are not adjacent to i
-                j_candidates = [j_c for j_c in j_candidates if j_c not in graph.neighbourhoods[i]]
-
-                if len(j_candidates) > 0:
-                    j_candidates_weights = [graph.nodes_weights[node] for node in j_candidates]
-                    j = j_candidates[np.argmax(j_candidates_weights)]
-
-                else:
-                    break  # ===========================================================================================================================
-                    # break # ===========================================================================================================================
-                    # S2_visited.append(S2)
-
-            else:
-                # If we couldn't find an independent set S2, then we can't find a node j
+        #   Search by the first condition
+        for index, indep_set in enumerate(indep_sets):
+            if index != max_fractional and \
+                    i in indep_set and \
+                    indep_sets_max_weights[index] == graph.nodes_weights[i]:
+                # if indep_set contains i and its cost is equal to the weight of i
+                S2 = indep_set
                 break
+
+        if len(S2) == 0:
+
+            if i_weight_index > 0:
+                #   Search by the second condition
+                searched_weight = graph_weights_sorted[i_weight_index - 1]
+
+                for w_index, m_weight in enumerate(indep_sets_max_weights):
+                    if m_weight == searched_weight:
+                        S2 = indep_sets[w_index]
+                        break
+
+            if len(S2) == 0 and i_weight_index < len(graph_weights_sorted) - 1:
+                #   Search by the third condition
+                searched_weight = graph_weights_sorted[i_weight_index + 1]
+
+                for w_index, m_weight in enumerate(indep_sets_max_weights):
+                    if m_weight == searched_weight:
+                        S2 = indep_sets[w_index]
+                        break
+
+        j = -1
+        if len(S2) > 0:
+            # Get node j
+            #   Get the elements that are either in S1 or in S2, but not in both (symmetric difference)
+            #   and remove node i
+            j_candidates = list((set(S1) ^ set(S2)) - {i})
+            #   Only nodes that are not adjacent to i
+            j_candidates = [j_c for j_c in j_candidates if j_c not in graph.neighbourhoods[i]]
+
+            if len(j_candidates) > 0:
+                j_candidates_weights = [graph.nodes_weights[node] for node in j_candidates]
+                j = j_candidates[np.argmax(j_candidates_weights)]
 
         if j > -1:
             return [
@@ -250,61 +225,15 @@ class BranchAndPrice:
         is_bounded = True
         sol, obj = 0, 0
 
-        # old_columns = []
-
         while len(new_columns) > 0:
             sol, obj, pi_vals = rmp.solve_relaxation()
 
-            if (sol, obj, pi_vals) == (-1, -1, -1):
+            if sol == -1:
                 is_bounded = False
                 break
 
             sp_solver.set_pi_vals(pi_vals)
             new_columns = sp_solver.solve()
-
-            # print(old_columns)
-
-            # old_visited = []
-            # for col in new_columns:
-            #     if col in old_visited:
-            #
-            #         print("OLD COLUMNS PROBLEM")
-            #         print(len(old_columns))
-            #         print(rmp.lp.indep_sets)
-            #         print(old_columns)
-            #         print(new_columns)
-            #         sys.exit()
-            #     else:
-            #         old_visited.append(col)
-
-            new_columns = [col for col in new_columns if col not in rmp.lp.indep_sets]
-
-            # for col in new_columns:
-            #     if col in old_columns:
-            #         print("GENERATED SAME COLUMN")
-            #         print(rmp.lp.indep_sets)
-            #         print(old_columns)
-            #         print(new_columns)
-            #         print(col)
-            #         print("--------------------")
-            #
-            #         A = rmp.lp.A.tolist()
-            #
-            #         columns_indep_sets = []
-            #         for i in range(len(A[0])):
-            #             columns_indep_sets.append([])
-            #
-            #         for node_index, line in enumerate(A):
-            #             for set_index, value in enumerate(line):
-            #                 if value == 1:
-            #                     columns_indep_sets[set_index].append(node_index)
-            #
-            #         print(columns_indep_sets)
-            #         print(rmp.lp.indep_sets)
-            #
-            #     elif col in rmp.lp.indep_sets:
-            #         print("IT WAS NOT GENERATED FROM OLD GENERATED COLUMNS")
-            # old_columns += new_columns
 
             rmp.add_columns(new_columns)
 
@@ -328,16 +257,13 @@ class BranchAndPrice:
 
         while len(problems_stack) > 0:
 
-            print("================")
-
             problem = problems_stack.pop()
 
+            print("================")
             print(problem["branch_type"])
+            print("SOLVING RMP")
 
-            # is_bounded, sol, obj = self.__solve_problem__(**problem)
-            print("SOLVING SP")
             is_bounded, sol, obj = self.__solve_problem__(problem["rmp"], problem["sp_solver"])
-            print("SOLVED SP")
 
             if is_bounded and (best_so_far["rmp"] == -1 or obj < best_so_far["obj"]):
 
@@ -364,48 +290,3 @@ class BranchAndPrice:
 
         print(f"OBJECTIVE FUNCTION : {best_found['obj']}")
         print(f"SOLUTION : {best_found['sol']}")
-
-        # rmp = best_found["rmp"]
-        # indep_sets = rmp.lp.indep_sets
-        #
-        # solution_indep_sets = []
-        # for index, value in enumerate(solution):
-        #     if value == 1:
-        #         solution_indep_sets.append(indep_sets[index])
-        #
-        # original_nodes = rmp.lp.graph.original_nodes
-        #
-        # original_sol_indep_sets = []
-        # for indep_set in solution_indep_sets:
-        #
-        #     current_set = []
-        #     for node in indep_set:
-        #         current_set += original_nodes[node]
-        #
-        #     original_sol_indep_sets.append(current_set)
-        #
-        # indep_sets_weight = sum([max([self.graph.nodes_weights[node] for node in indep_set])
-        #                          for indep_set in original_sol_indep_sets])
-        #
-        # print(f"ACTUAL WEIGHT : {indep_sets_weight}")
-        #
-        # invalid_indep_sets = False
-        # invalids = 0
-        # for index, indep_set in enumerate(original_sol_indep_sets):
-        #     for node in indep_set:
-        #         for other in indep_set:
-        #             if node != other and (node in self.graph.neighbourhoods[other] or
-        #                                   other in self.graph.neighbourhoods[node]):
-        #                 invalid_indep_sets = True
-        #                 invalids += 1
-        #
-        # print(f"INVALID INDEPENDENT SETS : {invalid_indep_sets}")
-        # print(f"INVALIDS : {invalids / 2}")
-        #
-        # all_selected_nodes = []
-        # for indep_set in original_sol_indep_sets:
-        #     all_selected_nodes += indep_set
-        #
-        # length = len(list(set(all_selected_nodes)))
-        # print(f"LEN ALL SELECTED NODES : {length}")
-        # print(f"same as original? : {length == len(self.graph.nodes_weights)}")

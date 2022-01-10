@@ -57,8 +57,6 @@ class BranchAndBound:
 
     def __weighted_clique_cover_construction_heuristic__(self, S, F):
 
-        # wcc_nodes_lists = []
-        # wcc_weights = []
         wcc_weights_sum = 0
 
         not_visited = list(F)
@@ -74,9 +72,6 @@ class BranchAndBound:
 
             v_maximal_clique = self.__get_maximal_clique_for_node__(v, not_visited, temp_pi_vals)
             v_maximal_clique_weight = temp_pi_vals[v]
-
-            # wcc_nodes_lists.append(v_maximal_clique)
-            # wcc_weights.append(v_maximal_clique_weight)
 
             for node in v_maximal_clique:
                 temp_pi_vals[node] -= v_maximal_clique_weight
@@ -149,8 +144,8 @@ class BranchAndBound:
                 self.LB_S = list(S)
 
                 # If we find an independent set with the weight higher than the target weight, then return
+                # if self.LB > self.weight:
                 if self.LB > self.beta * self.weight:
-                    # if self.LB > self.weight:
                     return sorted(self.LB_S)
 
             # First pruning rule

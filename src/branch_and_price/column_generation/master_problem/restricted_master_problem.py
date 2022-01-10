@@ -14,8 +14,8 @@ class RestrictedMasterProblem:
             self.lp.add_columns([indep_set])
 
     def add_columns(self, indep_sets):
-        # if len(indep_sets) > 0:
-        self.lp.add_columns(indep_sets)
+        if len(indep_sets) > 0:
+            self.lp.add_columns(indep_sets)
 
     def solve_relaxation(self):
 

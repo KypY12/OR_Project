@@ -1,4 +1,5 @@
 import gurobipy as gp
+import numpy as np
 from gurobipy import GRB
 
 env = gp.Env(empty=True)
@@ -8,10 +9,20 @@ env.start()
 
 class GurobiSolver:
 
-    def __init__(self, A, b, c, lb, ub):
+    def __init__(self, A, b, c,
+                 lb=0,
+                 ub=np.inf,
+                 constr_sign=">=",
+                 variables_type=GRB.CONTINUOUS,
+                 problem_type=GRB.MINIMIZE):
 
         self.A, self.b, self.c = A, b, c
         self.lb, self.ub = lb, ub
+
+        self.constr_sign = constr_sign
+
+        self.variables_type = variables_type
+        self.problem_type = problem_type
 
         self.model, self.x = self.__solve__()
 
@@ -20,13 +31,16 @@ class GurobiSolver:
         model = gp.Model("Gurobi Model", env=env)
 
         # Create the variables
-        x = model.addMVar(shape=self.c.shape, vtype=GRB.CONTINUOUS, name="x", lb=self.lb, ub=self.ub)
+        x = model.addMVar(shape=self.c.shape, vtype=self.variables_type, name="x", lb=self.lb, ub=self.ub)
 
         # Set the objective function
-        model.setObjective(self.c @ x, GRB.MINIMIZE)
+        model.setObjective(self.c @ x, self.problem_type)
 
         # Create the constraints
-        model.addConstr(self.A @ x >= self.b, name="constraints")
+        if self.constr_sign == ">=":
+            model.addConstr(self.A @ x >= self.b, name="constraints")
+        else:
+            model.addConstr(self.A @ x <= self.b, name="constraints")
 
         model.optimize()
 

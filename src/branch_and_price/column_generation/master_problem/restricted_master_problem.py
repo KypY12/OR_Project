@@ -1,3 +1,5 @@
+import numpy as np
+
 from src.linear_programs.lp_solvers.gurobi_solver import GurobiSolver
 from src.linear_programs.wvcp_linear_program import WVCPLinearProgram
 
@@ -11,9 +13,13 @@ class RestrictedMasterProblem:
         if len(indep_set) > 0:
             self.lp.add_columns([indep_set])
 
+    def add_columns(self, indep_sets):
+        # if len(indep_sets) > 0:
+        self.lp.add_columns(indep_sets)
+
     def solve_relaxation(self):
 
-        solver = GurobiSolver(self.lp.A, self.lp.b, self.lp.c, lb=0, ub=1)
+        solver = GurobiSolver(self.lp.A, self.lp.b, self.lp.c, lb=0, ub=np.inf)
 
         if not solver.is_unbounded_or_unfeasible():
             return solver.get_sol(), solver.get_obj(), solver.get_pi()

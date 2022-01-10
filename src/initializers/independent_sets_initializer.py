@@ -30,6 +30,6 @@ class IndependentSetsInitializer:
                             current_indep_set += [other]
                             visited[other] = 1
 
-                indep_sets += [current_indep_set]
+                indep_sets += [sorted(current_indep_set)]
 
         return indep_sets

@@ -67,11 +67,16 @@ class TabuSearchHeuristic:
 
     def __update_tabu_list__(self):
 
+        to_be_removed = []
         for node in self.tabu_list:
             self.tabu_list[node] -= 1
 
             if self.tabu_list[node] == 0:
-                del self.tabu_list[node]
+                to_be_removed.append(node)
+                # del self.tabu_list[node]
+
+        for node in to_be_removed:
+            del self.tabu_list[node]
 
     def __expand_random_maximal_indep_set__(self):
         nodes_unused = [node for node in self.nodes if node not in self.current_indep_set]
@@ -136,7 +141,7 @@ class TabuSearchHeuristic:
         self.found_indep_set = copy.deepcopy(self.current_indep_set)
 
         if self.__sum_of_pis__(self.found_indep_set) > self.beta * self.weight:
-            return self.found_indep_set
+            return sorted(self.found_indep_set)
 
         for iteration in range(self.max_iteations):
             self.max = -1
@@ -171,9 +176,9 @@ class TabuSearchHeuristic:
 
             # return the independent set
             if self.__sum_of_pis__(self.found_indep_set) > self.beta * self.weight or self.max == -1:
-                return self.found_indep_set
+                return sorted(self.found_indep_set)
 
             # update number iterations for nodes in tabu list
             self.__update_tabu_list__()
 
-        return self.found_indep_set
+        return sorted(self.found_indep_set)

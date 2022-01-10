@@ -37,14 +37,23 @@ class Graph:
 
         for edges in edges_str:
             tokens = edges.split(sep)
+
+            tokens = [elem for elem in tokens if len(elem) > 0]
+
             left = int(tokens[1]) - 1
             right = int(tokens[2]) - 1
 
-            self.neighbourhoods[left] += [right]
-            self.neighbourhoods[right] += [left]
+            if left != right:
+                if right not in self.neighbourhoods[left]:
+                    self.neighbourhoods[left] += [right]
+
+                if left not in self.neighbourhoods[right]:
+                    self.neighbourhoods[right] += [left]
 
         for node in nodes_str:
             tokens = node.split(sep)
+            tokens = [elem for elem in tokens if len(elem) > 0]
+
             node = int(tokens[1]) - 1
             weight = int(tokens[2])
 
@@ -52,13 +61,17 @@ class Graph:
 
         return self
 
-    def copy(self, graph):
+    def copy_from_graph(self, graph):
         self.number_of_nodes = graph.number_of_nodes
 
         self.neighbourhoods = deepcopy(graph.neighbourhoods)
         self.nodes_weights = deepcopy(graph.nodes_weights)
 
         self.max_weight_subgraphs = deepcopy(graph.max_weight_subgraphs)
+
+        self.original_nodes = deepcopy(graph.original_nodes)
+
+        return self
 
     def get_neighbours(self, node):
         return self.neighbourhoods[node]
